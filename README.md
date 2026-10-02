@@ -98,3 +98,12 @@ Para ver los detalles específicos de las últimas funciones añadidas, consulta
    - Qué ocurre si el usuario borra caché o cambia de dispositivo.
    - Código fuente completo de guardar, leer, borrar y exportar.
 
+3. 📱 **[README_ACCESIBILIDAD_Y_DISENO.md](./README_ACCESIBILIDAD_Y_DISENO.md):**
+   - Adaptación ergonómica para celulares estrechos (**320 px** de ancho) y uso con una sola mano.
+   - Contraste extremo para lectura bajo el sol en el patio escolar.
+   - Regla estricta de tipografía: **texto nunca menor a 16 px**.
+   - Etiquetas visibles en todos los campos de entrada.
+   - Un solo botón principal por pantalla.
+   - Estados vacíos invitando a la primera acción.
+   - Mensajes sin tecnicismos en español.
+

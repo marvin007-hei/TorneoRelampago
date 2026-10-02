@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Accesibilidad para patio escolar al sol y móviles de 320px */
+html, body {
+  font-size: 16px;
+  min-width: 320px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Evitar que cualquier botón, input o texto baje de 16px */
+input, select, textarea {
+  font-size: 16px !important;
+  min-height: 48px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -17,20 +30,20 @@
 
 /* Estética de Cancha de Fútbol Escolar (Pasto y Franjas de Césped) */
 .cancha-futbol {
-  background-color: #05190b;
+  background-color: #031408;
   background-image: repeating-linear-gradient(
     180deg,
-    rgba(16, 185, 129, 0.04) 0px,
-    rgba(16, 185, 129, 0.04) 60px,
-    rgba(5, 25, 11, 0.95) 60px,
-    rgba(5, 25, 11, 0.95) 120px
+    rgba(16, 185, 129, 0.05) 0px,
+    rgba(16, 185, 129, 0.05) 60px,
+    rgba(3, 20, 8, 0.98) 60px,
+    rgba(3, 20, 8, 0.98) 120px
   );
 }
 
 /* Scrollbar estilizada para móviles y tablas */
 .scrollbar-thin::-webkit-scrollbar {
-  height: 4px;
-  width: 4px;
+  height: 6px;
+  width: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -38,7 +51,8 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.6);
   border-radius: 9999px;
 }
+
 

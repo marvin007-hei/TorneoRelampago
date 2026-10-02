@@ -321,13 +321,14 @@ export default function App() {
       {/* Contenedor Principal */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-4 space-y-4">
         {/* Barra de Navegación de Pestañas Superior (para tablets y escritorio) */}
-        <div className="hidden sm:grid grid-cols-4 gap-2 bg-emerald-950/80 p-1.5 rounded-xl border border-emerald-800/80 shadow-lg">
+        <div className="hidden sm:grid grid-cols-4 gap-2 bg-emerald-950/90 p-2 rounded-2xl border-2 border-emerald-700/80 shadow-lg">
           <button
             onClick={() => setActiveTab('teams')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            data-tab="teams"
+            className={`min-h-[48px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'teams'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-emerald-200 hover:text-white hover:bg-emerald-900/60'
+                ? 'bg-amber-400 text-slate-950 shadow-md ring-2 ring-white'
+                : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'
             }`}
           >
             <span>⚽ 1. Equipos ({teams.length})</span>
@@ -335,10 +336,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('fixture')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            data-tab="fixture"
+            className={`min-h-[48px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'fixture'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-emerald-200 hover:text-white hover:bg-emerald-900/60'
+                ? 'bg-amber-400 text-slate-950 shadow-md ring-2 ring-white'
+                : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'
             }`}
           >
             <span>📅 2. Partidos ({matches.length})</span>
@@ -346,10 +348,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('standings')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            data-tab="standings"
+            className={`min-h-[48px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'standings'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-emerald-200 hover:text-white hover:bg-emerald-900/60'
+                ? 'bg-amber-400 text-slate-950 shadow-md ring-2 ring-white'
+                : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'
             }`}
           >
             <span>🏆 3. Posiciones</span>
@@ -357,13 +360,14 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('penaltyGame')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            data-tab="penaltyGame"
+            className={`min-h-[48px] flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'penaltyGame'
-                ? 'bg-amber-500 text-slate-950 shadow-md animate-pulse'
-                : 'text-emerald-200 hover:text-white hover:bg-emerald-900/60'
+                ? 'bg-amber-400 text-slate-950 shadow-md ring-2 ring-white'
+                : 'text-emerald-100 hover:text-white hover:bg-emerald-900/60'
             }`}
           >
-            <span>🥅 4. Penales (Juego)</span>
+            <span>🥅 4. Penales</span>
           </button>
         </div>
 
@@ -383,6 +387,7 @@ export default function App() {
                   setActiveTab('fixture');
                 }
               }}
+              onLoadSamplePrompt={handleLoadSample}
             />
           )}
 
@@ -405,6 +410,7 @@ export default function App() {
               teams={teams}
               matches={matches}
               onNavigateToFixture={() => setActiveTab('fixture')}
+              onNavigateToTeams={() => setActiveTab('teams')}
             />
           )}
 
@@ -420,58 +426,59 @@ export default function App() {
         </div>
       </main>
 
-      {/* Barra de Navegación Inferior Móvil (Mobile-first, táctil futbolera) */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-950/95 backdrop-blur-md border-t border-emerald-800 shadow-2xl px-1.5 py-1.5">
-        <div className="grid grid-cols-4 gap-1 max-w-md mx-auto">
+      {/* Barra de Navegación Inferior Móvil (Mobile-first, táctil futbolera, botones >= 48px y texto >= 16px) */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md border-t-2 border-emerald-500 shadow-2xl px-2 py-2">
+        <div className="grid grid-cols-4 gap-1.5 max-w-md mx-auto">
           <button
             onClick={() => setActiveTab('teams')}
-            className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+            data-tab="teams"
+            className={`min-h-[56px] flex flex-col items-center justify-center p-1 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'teams'
-                ? 'text-amber-400 bg-amber-500/10'
-                : 'text-emerald-300 hover:text-white'
+                ? 'text-slate-950 bg-amber-400 ring-2 ring-white shadow-lg'
+                : 'text-white hover:text-amber-300'
             }`}
           >
-            <span className="text-base">⚽</span>
-            <span className="truncate">Equipos</span>
+            <span className="text-xl">⚽</span>
+            <span className="leading-tight">Equipos</span>
           </button>
 
           <button
             onClick={() => setActiveTab('fixture')}
-            className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+            data-tab="fixture"
+            className={`min-h-[56px] flex flex-col items-center justify-center p-1 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'fixture'
-                ? 'text-amber-400 bg-amber-500/10'
-                : 'text-emerald-300 hover:text-white'
+                ? 'text-slate-950 bg-amber-400 ring-2 ring-white shadow-lg'
+                : 'text-white hover:text-amber-300'
             }`}
           >
-            <span className="text-base">📅</span>
-            <span className="truncate">Partidos</span>
+            <span className="text-xl">📅</span>
+            <span className="leading-tight">Partidos</span>
           </button>
 
           <button
             onClick={() => setActiveTab('standings')}
-            className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer relative ${
+            data-tab="standings"
+            className={`min-h-[56px] flex flex-col items-center justify-center p-1 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'standings'
-                ? 'text-amber-400 bg-amber-500/10'
-                : 'text-emerald-300 hover:text-white'
+                ? 'text-slate-950 bg-amber-400 ring-2 ring-white shadow-lg'
+                : 'text-white hover:text-amber-300'
             }`}
           >
-            <span className="text-base">🏆</span>
-            <span className="truncate">Tabla</span>
-            {standings.length > 0 && standings[0].points > 0 && (
-              <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-amber-400" />
-            )}
+            <span className="text-xl">🏆</span>
+            <span className="leading-tight">Tabla</span>
           </button>
 
           <button
             onClick={() => setActiveTab('penaltyGame')}
-            className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+            data-tab="penaltyGame"
+            className={`min-h-[56px] flex flex-col items-center justify-center p-1 rounded-xl text-base font-black transition-all cursor-pointer ${
               activeTab === 'penaltyGame'
-                ? 'text-amber-400 bg-amber-500/15'
-                : 'text-emerald-300 hover:text-white'
+                ? 'text-slate-950 bg-amber-400 ring-2 ring-white shadow-lg'
+                : 'text-white hover:text-amber-300'
             }`}
           >
-            <span className="text-base">🥅</span>
-            <span className="truncate">Penales</span>
+            <span className="text-xl">🥅</span>
+            <span className="leading-tight">Penales</span>
           </button>
         </div>
       </nav>
@@ -581,10 +588,10 @@ export default function App() {
         </div>
       )}
 
-      {/* Notificación Toast Flotante */}
+      {/* Notificación Toast Flotante Visible (Alto contraste, texto >= 16px) */}
       {toastMessage && (
-        <div className="fixed bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-amber-500/50 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+        <div className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-black text-white text-base font-black px-6 py-3.5 rounded-2xl border-2 border-amber-400 shadow-2xl flex items-center gap-3 animate-bounce max-w-[90vw] text-center">
+          <span className="w-3 h-3 rounded-full bg-amber-400 shrink-0 inline-block animate-ping" />
           <span>{toastMessage}</span>
         </div>
       )}

@@ -1,22 +1,11 @@
 /**
  * @file src/components/StandingsTable.tsx
- * @description Tabla de posiciones en tiempo real con criterios de desempate y análisis de IA.
- * Función 3 del requerimiento: Tabla de posiciones que se recalcula con cada resultado.
- * 
- * PUNTOS CRÍTICOS DONDE ALGUIEN SUELE EQUIVOCARSE:
- * 1. Desbordamiento horizontal en pantallas móviles: Las tablas con 9 columnas (PJ, PG, PE, PP,
- *    GF, GC, DG, PTS) rompen el viewport de un teléfono. Se debe proveer un contenedor con
- *    overflow-x-auto suave y anchos mínimos fijos, además de destacar la columna PTS.
- * 2. Criterios de desempate invisibles: Los estudiantes discuten por qué un equipo está arriba
- *    de otro si tienen los mismos puntos. Se debe hacer visible de inmediato la regla aplicada
- *    (Diferencia de gol, goles a favor o duelo directo).
- * 3. Manejo de errores en la API de IA: Si el backend tarda o falla, se debe mantener
- *    siempre el desglose determinístico sin arrojar excepciones a la consola.
+ * @description Tabla de posiciones en tiempo real con diseño adaptable para 320px, alto contraste y texto >= 16px.
  */
 
 import React, { useState } from 'react';
 import { Standing, TiebreakDetail, Team, Match, AIStandingsAnalysis } from '../types/tournament';
-import { Trophy, Sparkles, HelpCircle, Shield, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Sparkles, HelpCircle, Shield, AlertTriangle, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 
 interface StandingsTableProps {
   standings: Standing[];
@@ -24,6 +13,7 @@ interface StandingsTableProps {
   teams: Team[];
   matches: Match[];
   onNavigateToFixture: () => void;
+  onNavigateToTeams?: () => void;
 }
 
 export const StandingsTable: React.FC<StandingsTableProps> = ({
@@ -32,20 +22,18 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
   teams,
   matches,
   onNavigateToFixture,
+  onNavigateToTeams,
 }) => {
   const [aiAnalysis, setAiAnalysis] = useState<AIStandingsAnalysis | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const playedMatchesCount = matches.filter((m) => m.isPlayed).length;
 
   const handleRequestAIAnalysis = async () => {
     setLoadingAi(true);
-    setAiError(null);
-
     try {
-      // Preparamos payload enriquecido con nombres legibles
       const teamMap = new Map(teams.map((t) => [t.id, t.name]));
       const enrichedMatches = matches.map((m) => ({
         ...m,
@@ -63,26 +51,20 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
         }),
       });
 
-      if (!res.ok) {
-        throw new Error('Error al conectar con el servicio de análisis');
-      }
-
+      if (!res.ok) throw new Error('Servicio de análisis no disponible');
       const data: AIStandingsAnalysis = await res.json();
       setAiAnalysis(data);
-    } catch (err: any) {
-      console.warn('Fallback local de análisis:', err.message);
-      // Generamos análisis algorítmico determinístico garantizado
+    } catch {
       const leader = standings[0];
       const tiebreakTexts = tiebreaks.map((t) => t.description);
-
       setAiAnalysis({
-        summary: `El torneo escolar cuenta con ${playedMatchesCount} partidos disputados. La punta está liderada por ${leader ? leader.teamName : 'equipos en competencia'} con ${leader ? leader.points : 0} unidades.`,
-        championCandidate: leader ? `${leader.teamName} (por puntaje y rendimiento actual)` : 'A definir',
+        summary: `El torneo del recreo tiene ${playedMatchesCount} partidos jugados. La punta está liderada por ${leader ? leader.teamName : 'los equipos en competencia'} con ${leader ? leader.points : 0} puntos.`,
+        championCandidate: leader ? `${leader.teamName} (por puntos y goles)` : 'A definir',
         tiebreakAnalysis:
           tiebreakTexts.length > 0
             ? tiebreakTexts
-            : ['No se presentan empates en puntos en las posiciones clave del torneo.'],
-        recessAdvice: '¡Los próximos partidos definirán quién se corona campeón del recreo!',
+            : ['No se presentan empates en puntos en las primeras posiciones.'],
+        recessAdvice: '¡Los siguientes partidos definirán al campeón escolar!',
         generatedBy: 'algorithmic',
       });
     } finally {
@@ -90,290 +72,332 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
     }
   };
 
+  // 5. Estado Vacío: Cuando todavía no hay ningún dato
   if (teams.length === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center space-y-3">
-        <div className="w-12 h-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
-          <Trophy className="w-6 h-6" />
+      <div className="bg-gradient-to-b from-emerald-950 to-black border-2 border-emerald-500 rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+        <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 flex items-center justify-center text-3xl">
+          🏆
         </div>
-        <h3 className="text-base font-bold text-white">No hay equipos registrados</h3>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto">
-          Inscribí a los equipos para comenzar a registrar resultados y calcular la tabla.
-        </p>
+        <div className="space-y-2">
+          <h3 className="text-xl font-black text-white">
+            ¡La tabla de posiciones está esperando a los equipos!
+          </h3>
+          <p className="text-base font-bold text-emerald-100 max-w-md mx-auto leading-relaxed">
+            Inscribe los equipos o cursos en la primera pestaña para comenzar a registrar los goles y calcular las posiciones automáticamente.
+          </p>
+        </div>
+
+        {/* 4. Único Botón Principal */}
+        <div className="pt-2">
+          <button
+            onClick={() => {
+              if (onNavigateToTeams) {
+                onNavigateToTeams();
+              } else {
+                const teamsTabBtn = document.querySelector('button[data-tab="teams"]') as HTMLElement;
+                if (teamsTabBtn) teamsTabBtn.click();
+              }
+            }}
+            className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base rounded-2xl shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
+          >
+            <span>⚽ Inscribir Equipos Ahora</span>
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Cabecera de la tabla */}
-      <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            Tabla de Posiciones
-          </h2>
-          <p className="text-[11px] text-slate-400">
-            {playedMatchesCount === 0
-              ? 'Todos los equipos comienzan con 0 puntos. ¡Cargá los partidos!'
-              : `Recalculada automáticamente con ${playedMatchesCount} partido(s) jugados`}
-          </p>
+    <div className="space-y-4 w-full max-w-full">
+      {/* Encabezado de la tabla */}
+      <div className="bg-black/90 p-4 rounded-2xl border-2 border-emerald-600/80 shadow-xl space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-amber-400" />
+              <span>Tabla de Posiciones Oficial</span>
+            </h2>
+            <p className="text-base font-bold text-emerald-200">
+              {playedMatchesCount} partidos jugados • Desempate oficial escolar
+            </p>
+          </div>
+
+          {/* Acciones Secundarias (Botón secundario de IA y reglas) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleRequestAIAnalysis}
+              disabled={loadingAi}
+              className="flex-1 sm:flex-none min-h-[48px] px-4 py-2.5 bg-emerald-950 hover:bg-emerald-900 border-2 border-emerald-500 text-white font-bold text-base rounded-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Sparkles className="w-5 h-5 text-amber-300" />
+              <span>{loadingAi ? 'Analizando...' : 'Explicar con IA'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowRules(!showRules)}
+              className="min-h-[48px] px-3.5 py-2.5 bg-emerald-950 border-2 border-emerald-600 text-emerald-200 hover:text-white font-bold text-base rounded-xl cursor-pointer"
+              title="Ver reglas de desempate"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Botón de Análisis IA */}
-          <button
-            onClick={handleRequestAIAnalysis}
-            disabled={loadingAi}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs rounded-lg shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-            <span>{loadingAi ? 'Analizando...' : 'Explicar con IA'}</span>
-          </button>
-
-          {/* Botón ver reglamento */}
-          <button
-            onClick={() => setShowRules(!showRules)}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1 border border-slate-700 cursor-pointer"
-            title="Ver criterios de desempate oficiales"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-            {showRules ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          </button>
+        {/* 3. Selector de vista accesible con etiqueta visible */}
+        <div className="flex items-center justify-between pt-2 border-t border-emerald-800">
+          <span className="text-base font-black text-white">
+            Modo de visualización:
+          </span>
+          <div className="flex items-center gap-1 bg-emerald-950 p-1 rounded-xl border border-emerald-700">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-base font-black cursor-pointer transition-all ${
+                viewMode === 'cards'
+                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  : 'text-emerald-200 hover:text-white'
+              }`}
+            >
+              Tarjetas Móvil
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-base font-black cursor-pointer transition-all ${
+                viewMode === 'table'
+                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  : 'text-emerald-200 hover:text-white'
+              }`}
+            >
+              Tabla Completa
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Panel Desplegable: Reglamento Oficial de Desempates */}
+      {/* Reglas de Desempate desplegables */}
       {showRules && (
-        <div className="bg-slate-900/90 border border-amber-500/30 p-3.5 rounded-xl text-xs space-y-2 animate-fadeIn">
-          <div className="flex items-center gap-1.5 text-amber-400 font-extrabold uppercase text-[11px]">
-            <Shield className="w-3.5 h-3.5" />
-            <span>Criterios Oficiales de Desempate (Fútbol Escolar)</span>
-          </div>
-          <ol className="list-decimal list-inside text-slate-300 space-y-1 pl-1 text-[11px]">
-            <li>
-              <strong>Puntos acumulados (PTS):</strong> Victoria = 3 pts, Empate = 1 pt, Derrota = 0 pts.
-            </li>
-            <li>
-              <strong>Diferencia de Gol (DG):</strong> Goles a favor (GF) menos goles en contra (GC).
-            </li>
-            <li>
-              <strong>Mayor cantidad de Goles a Favor (GF):</strong> Premia al equipo con mayor ataque.
-            </li>
-            <li>
-              <strong>Enfrentamiento Directo:</strong> Si los equipos ya jugaron entre sí, clasifica arriba el ganador.
-            </li>
-            <li>
-              <strong>Mayor cantidad de Partidos Ganados (PG).</strong>
-            </li>
+        <div className="bg-black/95 border-2 border-emerald-500 p-5 rounded-2xl shadow-xl space-y-2 text-base text-white">
+          <h4 className="font-black text-amber-400 text-lg flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Criterios de Desempate Oficiales:
+          </h4>
+          <ol className="list-decimal list-inside space-y-1.5 font-bold text-emerald-100 pl-1">
+            <li><strong>Puntos (PTS):</strong> 3 por victoria, 1 por empate, 0 por derrota.</li>
+            <li><strong>Diferencia de Gol (DG):</strong> Goles a favor menos goles en contra.</li>
+            <li><strong>Mayor cantidad de Goles a Favor (GF).</strong></li>
+            <li><strong>Partido directo:</strong> Resultado entre los equipos empatados.</li>
+            <li><strong>Mayor cantidad de Partidos Ganados (PG).</strong></li>
           </ol>
         </div>
       )}
 
-      {/* Tarjeta de Análisis de IA (Criterio de aceptación explícito) */}
+      {/* Informe de IA si fue solicitado */}
       {aiAnalysis && (
-        <div className="bg-slate-900 border-2 border-amber-500/50 p-4 rounded-xl shadow-xl space-y-3 relative overflow-hidden animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                Informe del Árbitro / IA del Recreo
-              </span>
-            </div>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+        <div className="bg-black/95 border-2 border-amber-400 p-5 rounded-2xl shadow-2xl space-y-3">
+          <div className="flex items-center justify-between border-b border-emerald-800 pb-2">
+            <span className="text-base font-black uppercase text-amber-400 flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Informe del Árbitro Escolar (IA)
+            </span>
+            <span className="text-base font-bold text-emerald-300">
               {aiAnalysis.generatedBy === 'gemini' ? 'Gemini 3.8 Flash' : 'Motor Reglamentario'}
             </span>
           </div>
 
-          <p className="text-xs text-slate-200 leading-relaxed font-medium">
+          <p className="text-base font-bold text-white leading-relaxed">
             {aiAnalysis.summary}
           </p>
 
-          {/* Candidato a Campeón */}
-          <div className="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />
-            <div className="text-xs">
-              <span className="text-slate-400 text-[11px] block">Candidato al título:</span>
-              <span className="font-bold text-white">{aiAnalysis.championCandidate}</span>
+          <div className="bg-emerald-950/80 p-3.5 rounded-xl border border-emerald-600 flex items-center gap-3">
+            <Trophy className="w-6 h-6 text-yellow-400 shrink-0" />
+            <div>
+              <span className="text-base font-bold text-emerald-300 block">Candidato al título:</span>
+              <span className="text-lg font-black text-white">{aiAnalysis.championCandidate}</span>
             </div>
           </div>
 
-          {/* Desglose de Desempates */}
           {aiAnalysis.tiebreakAnalysis.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-slate-300 block">
-                ⚖️ Resolución de Criterios de Desempate:
+            <div className="space-y-1.5 pt-1">
+              <span className="text-base font-black text-amber-300 block">
+                ⚖️ Resolución de Desempates:
               </span>
-              <div className="space-y-1">
-                {aiAnalysis.tiebreakAnalysis.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2 rounded bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-200"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Consejo del recreo */}
-          {aiAnalysis.recessAdvice && (
-            <div className="text-[11px] text-emerald-400 italic bg-emerald-950/20 p-2 rounded border border-emerald-500/20">
-              📢 {aiAnalysis.recessAdvice}
+              {aiAnalysis.tiebreakAnalysis.map((item, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-700 text-base font-bold text-emerald-100">
+                  {item}
+                </div>
+              ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Tabla de Posiciones Responsiva para Celular */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-md">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-[10px] uppercase font-black text-slate-400 border-b border-slate-800">
-              <tr>
-                <th className="py-2.5 px-2 text-center w-8">#</th>
-                <th className="py-2.5 px-3 min-w-[140px]">Equipo</th>
-                <th className="py-2.5 px-2 text-center font-black text-amber-400 bg-amber-500/10">
-                  PTS
-                </th>
-                <th className="py-2.5 px-2 text-center">PJ</th>
-                <th className="py-2.5 px-2 text-center">PG</th>
-                <th className="py-2.5 px-2 text-center">PE</th>
-                <th className="py-2.5 px-2 text-center">PP</th>
-                <th className="py-2.5 px-2 text-center">GF</th>
-                <th className="py-2.5 px-2 text-center">GC</th>
-                <th className="py-2.5 px-2 text-center">DG</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80 font-medium">
-              {standings.map((team, idx) => {
-                const isLeader = idx === 0 && team.points > 0;
-                const isPodium = idx < 3;
-
-                return (
-                  <tr
-                    key={team.teamId}
-                    className={`hover:bg-slate-800/50 transition-colors ${
-                      isLeader ? 'bg-amber-500/5' : ''
-                    }`}
-                  >
-                    {/* Posición */}
-                    <td className="py-3 px-2 text-center">
-                      <span
-                        className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold ${
-                          idx === 0
-                            ? 'bg-amber-400 text-slate-950 shadow-sm'
-                            : idx === 1
-                            ? 'bg-slate-300 text-slate-950'
-                            : idx === 2
-                            ? 'bg-amber-700 text-white'
-                            : 'text-slate-400'
-                        }`}
-                      >
-                        {team.position}
-                      </span>
-                    </td>
-
-                    {/* Nombre y color del equipo */}
-                    <td className="py-3 px-3">
+      {/* 1 y 2. VISTA DE TARJETAS MÓVILES: Perfecta para 320px de ancho y lectura bajo el sol con texto >= 16px */}
+      {viewMode === 'cards' && (
+        <div className="space-y-3.5">
+          {standings.map((team, idx) => {
+            const isLeader = idx === 0 && team.points > 0;
+            return (
+              <div
+                key={team.teamId}
+                className={`bg-black/95 border-2 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3 ${
+                  isLeader ? 'border-amber-400 bg-amber-950/20' : 'border-emerald-700/80'
+                }`}
+              >
+                {/* Cabecera de la tarjeta: Posición, Nombre y Puntos */}
+                <div className="flex items-center justify-between gap-2 border-b border-emerald-800 pb-2.5">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full font-black text-base ${
+                        idx === 0
+                          ? 'bg-amber-400 text-slate-950 ring-2 ring-white'
+                          : idx === 1
+                          ? 'bg-slate-300 text-slate-950'
+                          : idx === 2
+                          ? 'bg-amber-700 text-white'
+                          : 'bg-emerald-950 text-white border border-emerald-600'
+                      }`}
+                    >
+                      {team.position}°
+                    </span>
+                    <div>
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                          className="w-4 h-4 rounded-full border border-white"
                           style={{ backgroundColor: team.teamColor }}
                         />
-                        <div>
-                          <div className="font-bold text-white text-xs flex items-center gap-1">
-                            <span>{team.teamName}</span>
-                            {isLeader && (
-                              <span title="Líder del torneo" className="text-xs">
-                                👑
-                              </span>
-                            )}
-                          </div>
-                          {team.tiebreakReason && (
-                            <span className="text-[10px] text-amber-400/90 block leading-tight font-normal">
-                              {team.tiebreakReason}
-                            </span>
-                          )}
-                        </div>
+                        <h3 className="font-black text-lg text-white">
+                          {team.teamName}
+                        </h3>
+                        {isLeader && <span>👑</span>}
                       </div>
-                    </td>
+                      {team.tiebreakReason && (
+                        <p className="text-base font-bold text-amber-300">
+                          {team.tiebreakReason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                    {/* Puntos (destacado) */}
-                    <td className="py-3 px-2 text-center font-black font-mono text-sm text-amber-400 bg-amber-500/10">
+                  {/* Puntos destacados */}
+                  <div className="text-right">
+                    <span className="block text-2xl font-black text-amber-400 font-mono">
                       {team.points}
-                    </td>
+                    </span>
+                    <span className="text-base font-bold text-emerald-300">
+                      PUNTOS
+                    </span>
+                  </div>
+                </div>
 
-                    {/* Estadísticas */}
-                    <td className="py-3 px-2 text-center text-slate-300">{team.played}</td>
-                    <td className="py-3 px-2 text-center text-emerald-400 font-semibold">
-                      {team.won}
-                    </td>
-                    <td className="py-3 px-2 text-center text-slate-400">{team.drawn}</td>
-                    <td className="py-3 px-2 text-center text-red-400">{team.lost}</td>
-                    <td className="py-3 px-2 text-center text-slate-300">{team.goalsFor}</td>
-                    <td className="py-3 px-2 text-center text-slate-400">{team.goalsAgainst}</td>
-                    <td
-                      className={`py-3 px-2 text-center font-bold ${
+                {/* Estadísticas en cuadrícula con texto >= 16px */}
+                <div className="grid grid-cols-4 gap-2 text-center pt-1">
+                  <div className="bg-emerald-950/70 p-2 rounded-xl border border-emerald-800">
+                    <span className="text-base font-bold text-emerald-300 block">PJ</span>
+                    <strong className="text-base font-black text-white">{team.played}</strong>
+                  </div>
+                  <div className="bg-emerald-950/70 p-2 rounded-xl border border-emerald-800">
+                    <span className="text-base font-bold text-emerald-300 block">PG</span>
+                    <strong className="text-base font-black text-emerald-400">{team.won}</strong>
+                  </div>
+                  <div className="bg-emerald-950/70 p-2 rounded-xl border border-emerald-800">
+                    <span className="text-base font-bold text-emerald-300 block">PE</span>
+                    <strong className="text-base font-black text-slate-300">{team.drawn}</strong>
+                  </div>
+                  <div className="bg-emerald-950/70 p-2 rounded-xl border border-emerald-800">
+                    <span className="text-base font-bold text-emerald-300 block">PP</span>
+                    <strong className="text-base font-black text-red-400">{team.lost}</strong>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                  <div className="bg-emerald-950/50 p-2 rounded-xl border border-emerald-800/80">
+                    <span className="text-base font-bold text-emerald-300 block">GF (Favor)</span>
+                    <strong className="text-base font-black text-white">{team.goalsFor}</strong>
+                  </div>
+                  <div className="bg-emerald-950/50 p-2 rounded-xl border border-emerald-800/80">
+                    <span className="text-base font-bold text-emerald-300 block">GC (Contra)</span>
+                    <strong className="text-base font-black text-white">{team.goalsAgainst}</strong>
+                  </div>
+                  <div className="bg-emerald-950/50 p-2 rounded-xl border border-emerald-800/80">
+                    <span className="text-base font-bold text-emerald-300 block">DG (Dif.)</span>
+                    <strong
+                      className={`text-base font-black ${
                         team.goalDifference > 0
                           ? 'text-emerald-400'
                           : team.goalDifference < 0
                           ? 'text-red-400'
-                          : 'text-slate-400'
+                          : 'text-white'
                       }`}
                     >
                       {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* VISTA DE TABLA COMPLETA CON DESPLAZAMIENTO TÁCTIL */}
+      {viewMode === 'table' && (
+        <div className="bg-black/95 border-2 border-emerald-600/80 rounded-2xl shadow-xl overflow-hidden">
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-base text-white border-collapse min-w-[560px]">
+              <thead className="bg-emerald-950 text-emerald-200 border-b-2 border-emerald-700">
+                <tr>
+                  <th className="py-3 px-3 text-center font-black">POS</th>
+                  <th className="py-3 px-4 text-left font-black">EQUIPO</th>
+                  <th className="py-3 px-3 text-center font-black text-amber-300">PTS</th>
+                  <th className="py-3 px-3 text-center font-black">PJ</th>
+                  <th className="py-3 px-3 text-center font-black">PG</th>
+                  <th className="py-3 px-3 text-center font-black">PE</th>
+                  <th className="py-3 px-3 text-center font-black">PP</th>
+                  <th className="py-3 px-3 text-center font-black">GF</th>
+                  <th className="py-3 px-3 text-center font-black">GC</th>
+                  <th className="py-3 px-3 text-center font-black">DG</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-emerald-800/80 font-bold">
+                {standings.map((team, idx) => (
+                  <tr key={team.teamId} className="hover:bg-emerald-950/40">
+                    <td className="py-3.5 px-3 text-center font-black">{team.position}°</td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 rounded-full border border-white" style={{ backgroundColor: team.teamColor }} />
+                        <span className="font-black text-white">{team.teamName}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center font-black font-mono text-xl text-amber-300 bg-emerald-950/80">
+                      {team.points}
+                    </td>
+                    <td className="py-3.5 px-3 text-center">{team.played}</td>
+                    <td className="py-3.5 px-3 text-center text-emerald-400">{team.won}</td>
+                    <td className="py-3.5 px-3 text-center text-slate-300">{team.drawn}</td>
+                    <td className="py-3.5 px-3 text-center text-red-400">{team.lost}</td>
+                    <td className="py-3.5 px-3 text-center">{team.goalsFor}</td>
+                    <td className="py-3.5 px-3 text-center">{team.goalsAgainst}</td>
+                    <td className="py-3.5 px-3 text-center font-black">
+                      {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Leyenda al pie de la tabla */}
-        <div className="bg-slate-950/60 p-2.5 border-t border-slate-800 text-[10px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <span><strong>PTS:</strong> Puntos</span>
-            <span><strong>PJ:</strong> Jugados</span>
-            <span><strong>GF:</strong> Goles a favor</span>
-            <span><strong>GC:</strong> Goles en contra</span>
-            <span><strong>DG:</strong> Diferencia de gol</span>
-          </div>
-
-          {playedMatchesCount === 0 && (
-            <button
-              onClick={onNavigateToFixture}
-              className="text-amber-400 hover:underline font-bold"
-            >
-              Cargar primeros resultados ➜
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Lista detallada de desempates matemáticos si existen empates */}
-      {tiebreaks.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-2">
-          <h4 className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-            Desempates de Posición Resueltos ({tiebreaks.length})
-          </h4>
-          <div className="space-y-1.5">
-            {tiebreaks.map((tb, idx) => (
-              <div
-                key={idx}
-                className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-start gap-2"
-              >
-                <span className="text-amber-400 font-bold shrink-0">#{idx + 1}</span>
-                <p className="text-[11px] leading-relaxed">{tb.description}</p>
-              </div>
-            ))}
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
+
+      {/* 4. Único Botón Principal de la Pantalla de Tabla */}
+      <div className="pt-2">
+        <button
+          onClick={onNavigateToFixture}
+          className="w-full min-h-[52px] py-4 px-6 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base rounded-2xl shadow-2xl flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
+        >
+          <Calendar className="w-5 h-5 text-slate-950" />
+          <span>📅 Ir al Calendario de Partidos</span>
+        </button>
+      </div>
     </div>
   );
 };
