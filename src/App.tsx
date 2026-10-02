@@ -212,13 +212,23 @@ export default function App() {
     showToast('¡Torneo de ejemplo cargado con 4 cursos y resultados para ver desempates!');
   };
 
-  const handleResetTournament = () => {
-    if (window.confirm('¿Seguro que querés reiniciar el torneo y borrar todos los datos del recreo?')) {
+  const handleResetTournament = async () => {
+    if (
+      window.confirm(
+        '¿Seguro que deseas reiniciar toda la liga escolar? Se limpiarán los equipos, partidos y posiciones para comenzar una nueva temporada deportiva.'
+      )
+    ) {
       clearTournamentStorage();
       setTeams([]);
       setMatches([]);
       setActiveTab('teams');
-      showToast('Torneo reiniciado. Podés registrar nuevos equipos.');
+      showToast('¡Liga escolar reiniciada! Lista para una nueva temporada.');
+
+      try {
+        await fetch('/api/reset-league', { method: 'POST' });
+      } catch (e) {
+        console.warn('Registro de reinicio offline:', e);
+      }
     }
   };
 

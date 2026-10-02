@@ -56,25 +56,25 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xs:inline">Prompt 1</span>
             </button>
 
-            {teamsCount === 0 ? (
+            {teamsCount === 0 && (
               <button
                 onClick={onLoadSample}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
                 title="Cargar 4 equipos y resultados de ejemplo para probar"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Cargar Ejemplo</span>
               </button>
-            ) : (
-              <button
-                onClick={onReset}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-red-950/40 text-slate-300 hover:text-red-400 border border-slate-700 text-xs transition-colors active:scale-95 cursor-pointer"
-                title="Reiniciar torneo y limpiar datos"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span className="hidden xs:inline">Reiniciar</span>
-              </button>
             )}
+
+            <button
+              onClick={onReset}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/70 hover:bg-red-900 text-red-200 hover:text-white border border-red-700/80 text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm"
+              title="Reiniciar toda la liga escolar para una nueva temporada"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reiniciar Liga</span>
+            </button>
           </div>
         </div>
 

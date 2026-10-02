@@ -76,6 +76,39 @@ app.post('/api/upload-evidence', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/reset-league
+ * Registra el reinicio de la liga y crea un commit con la nueva temporada.
+ */
+app.post('/api/reset-league', (_req: Request, res: Response) => {
+  try {
+    const timestamp = new Date().toLocaleString('es-ES', { timeZone: 'America/Santiago' });
+    const logEntry = `[${timestamp}] Liga escolar reiniciada. Comienza una nueva temporada.\n`;
+    fs.appendFileSync('HISTORIAL_LIGA.log', logEntry);
+
+    try {
+      execSync('git add HISTORIAL_LIGA.log', { stdio: 'pipe' });
+      execSync('git commit -m "Reinicio de la liga escolar para una nueva temporada deportiva"', { stdio: 'pipe' });
+      const ghToken = process.env.GITHUB_TOKEN;
+      if (ghToken) {
+        execSync(
+          `git push https://marvin007-hei:${ghToken}@github.com/marvin007-hei/TorneoRelampago.git main`,
+          { stdio: 'pipe' }
+        );
+      }
+    } catch (gitErr: any) {
+      console.warn('Nota Git en reset-league:', gitErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Liga reiniciada y registrada con nuevo commit en el historial.',
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Inicialización de cliente Gemini con telemetría aistudio-build
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
