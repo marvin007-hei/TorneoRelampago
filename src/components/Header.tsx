@@ -22,24 +22,24 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenEvidence,
 }) => {
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md">
+    <header className="bg-gradient-to-r from-emerald-950 via-[#062411] to-emerald-950 text-white border-b-2 border-emerald-700/80 sticky top-0 z-40 shadow-xl">
       <div className="max-w-4xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           {/* Logo y Título */}
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-black text-xl">
-              ⚡
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/30 text-slate-950 font-black text-xl">
+              ⚽
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-1.5">
+                <h1 className="font-black text-base sm:text-lg tracking-tight text-white flex items-center gap-1.5">
                   TORNEO RELÁMPAGO
                 </h1>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Recreo
+                <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 border border-emerald-400">
+                  Cancha N° 1
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
+              <p className="text-[11px] text-emerald-300 font-medium hidden sm:block">
                 Organizador estudiantil de fútbol escolar sin papeles perdidos
               </p>
             </div>

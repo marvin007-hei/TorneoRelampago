@@ -15,6 +15,18 @@
   animation: fadeIn 0.25s ease-out forwards;
 }
 
+/* Estética de Cancha de Fútbol Escolar (Pasto y Franjas de Césped) */
+.cancha-futbol {
+  background-color: #05190b;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(16, 185, 129, 0.04) 0px,
+    rgba(16, 185, 129, 0.04) 60px,
+    rgba(5, 25, 11, 0.95) 60px,
+    rgba(5, 25, 11, 0.95) 120px
+  );
+}
+
 /* Scrollbar estilizada para móviles y tablas */
 .scrollbar-thin::-webkit-scrollbar {
   height: 4px;
@@ -22,10 +34,11 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(6, 78, 59, 0.4);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.4);
+  background: rgba(16, 185, 129, 0.5);
   border-radius: 9999px;
 }
+

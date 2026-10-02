@@ -21,6 +21,8 @@ interface FixtureViewProps {
   onGenerateFixture: () => void;
   onUpdateMatchScore: (matchId: string, homeScore: number | null, awayScore: number | null, isPlayed: boolean) => void;
   onNavigateToStandings: () => void;
+  onRepeatMatches: () => void;
+  onOpenPenaltyGame?: (teamAId?: string, teamBId?: string) => void;
 }
 
 export const FixtureView: React.FC<FixtureViewProps> = ({
@@ -29,6 +31,8 @@ export const FixtureView: React.FC<FixtureViewProps> = ({
   onGenerateFixture,
   onUpdateMatchScore,
   onNavigateToStandings,
+  onRepeatMatches,
+  onOpenPenaltyGame,
 }) => {
   // Mapa rápido de ID de equipo a objeto Team
   const teamMap = new Map<string, Team>(teams.map((t) => [t.id, t]));
@@ -153,26 +157,47 @@ export const FixtureView: React.FC<FixtureViewProps> = ({
     <div className="space-y-4">
       {/* Barra superior de control de fechas y progreso */}
       <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl shadow-sm space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              Partidos del Recreo
+            <h2 className="text-sm font-black text-white flex items-center gap-1.5 uppercase tracking-wide">
+              <span className="text-base">⚽</span>
+              <span>Partidos del Recreo Escolar</span>
             </h2>
-            <p className="text-[11px] text-slate-400">
-              Progreso: {playedMatchesCount} de {totalMatches} partidos jugados (
+            <p className="text-[11px] text-emerald-300 font-medium">
+              Progreso: {playedMatchesCount} de {totalMatches} jugados (
               {Math.round((playedMatchesCount / totalMatches) * 100)}%)
             </p>
           </div>
 
-          <button
-            onClick={onGenerateFixture}
-            className="text-[11px] text-slate-400 hover:text-amber-400 flex items-center gap-1 px-2 py-1 rounded bg-slate-800 border border-slate-700 cursor-pointer"
-            title="Regenerar fixture desde cero"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>Rehacer</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {onOpenPenaltyGame && (
+              <button
+                onClick={() => onOpenPenaltyGame()}
+                className="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-300 hover:to-yellow-200 flex items-center gap-1 px-3 py-1.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+                title="Abrir minijuego de penales para determinar ganador"
+              >
+                <span>🥅 Minijuego Penales</span>
+              </button>
+            )}
+
+            <button
+              onClick={onRepeatMatches}
+              className="text-xs font-black text-emerald-100 bg-emerald-800 hover:bg-emerald-700 border border-emerald-500/60 flex items-center gap-1.5 px-3 py-1.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+              title="Reiniciar todos los resultados para volver a jugar los partidos (revancha)"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>🔁 Repetir Partidos (Revancha)</span>
+            </button>
+
+            <button
+              onClick={onGenerateFixture}
+              className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 cursor-pointer transition-colors"
+              title="Regenerar fixture desde cero"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Rehacer Fixture</span>
+            </button>
+          </div>
         </div>
 
         {/* Pestañas horizontales de Fechas (desplazables en pantalla pequeña) */}
@@ -358,6 +383,24 @@ export const FixtureView: React.FC<FixtureViewProps> = ({
                   </button>
                 </div>
               </div>
+
+              {/* Botón para desempatar este partido con penales */}
+              {onOpenPenaltyGame && (
+                <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                  <span className="text-[10px] text-emerald-400/80 font-medium">
+                    {match.isPlayed && match.homeScore === match.awayScore
+                      ? '🤝 ¡Empate en el recreo!'
+                      : '⚽ Desempate del partido'}
+                  </span>
+                  <button
+                    onClick={() => onOpenPenaltyGame(homeTeam.id, awayTeam.id)}
+                    className="text-[10px] font-black text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1 rounded-lg border border-amber-500/30 flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                    title="Jugar minijuego de penales entre estos dos equipos"
+                  >
+                    <span>🥅 Desempatar en Penales</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
