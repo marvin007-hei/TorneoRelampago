@@ -79,3 +79,22 @@ npm run dev
    - Los métodos de ordenamiento y cálculo nunca mutan los arrays originales; siempre generan copias superficiales mediante spread operator (`[...teams]`, `[...matches]`) para garantizar la reactividad en React.
 4. **Resiliencia ante fallos de conexión:**
    - Si la llamada a la IA de Gemini falla o no tiene credenciales, el sistema activa de forma transparente el motor de desempates algorítmico local, asegurando **cero errores en la consola**.
+
+---
+
+## 🆕 Nuevas Actualizaciones y Documentación Complementaria
+
+Para ver los detalles específicos de las últimas funciones añadidas, consulta los nuevos documentos:
+
+1. 📖 **[README_NUEVOS_CAMBIOS.md](./README_NUEVOS_CAMBIOS.md):**
+   - **Botón Reiniciar Liga:** Comienza una temporada escolar desde cero con trazabilidad en el servidor.
+   - **Botón Repetir Partidos (Modo Revancha):** Reinicia los marcadores sin borrar los equipos.
+   - **Minijuego de Penales Interactivos:** Tanda de 3 a 5 penales con arco, arquero animado y coronación del campeón.
+   - **Nueva Interfaz Cancha de Fútbol:** Textura de césped, líneas de cal y marcadores de estadio digital.
+
+2. 💾 **[README_PERSISTENCIA_Y_RESPALDOS.md](./README_PERSISTENCIA_Y_RESPALDOS.md):**
+   - Explicación de almacenamiento local con `localStorage`.
+   - Guía paso a paso para **Exportar Respaldos JSON** y **Restaurar** torneos entre diferentes celulares o computadoras.
+   - Qué ocurre si el usuario borra caché o cambia de dispositivo.
+   - Código fuente completo de guardar, leer, borrar y exportar.
+
