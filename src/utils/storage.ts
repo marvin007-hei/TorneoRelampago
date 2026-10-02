@@ -144,3 +144,52 @@ export function clearTournamentStorage(): void {
   localStorage.removeItem(STORAGE_KEY_TEAMS);
   localStorage.removeItem(STORAGE_KEY_MATCHES);
 }
+
+/**
+ * Exporta todos los datos del torneo a un string JSON formateado
+ */
+export function exportTournamentData(): string {
+  const teams = loadStoredTeams();
+  const matches = loadStoredMatches();
+  const backup = {
+    app: 'Torneo Relámpago',
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    teams,
+    matches,
+  };
+  return JSON.stringify(backup, null, 2);
+}
+
+/**
+ * Dispara la descarga del archivo JSON de respaldo en el dispositivo del usuario
+ */
+export function downloadTournamentBackup(): void {
+  const jsonString = exportTournamentData();
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  anchor.href = url;
+  anchor.download = `torneo_relampago_respaldo_${dateStr}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Restaura los datos del torneo desde un archivo JSON previamente exportado
+ */
+export function importTournamentData(jsonString: string): { teams: Team[]; matches: Match[] } {
+  const parsed = JSON.parse(jsonString);
+  if (!parsed.teams || !Array.isArray(parsed.teams)) {
+    throw new Error('El archivo JSON no contiene una lista válida de equipos.');
+  }
+  saveStoredTeams(parsed.teams);
+  const matches = Array.isArray(parsed.matches) ? parsed.matches : [];
+  saveStoredMatches(matches);
+  return {
+    teams: parsed.teams,
+    matches,
+  };
+}
+

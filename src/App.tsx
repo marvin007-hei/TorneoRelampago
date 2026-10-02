@@ -30,6 +30,8 @@ import {
   saveStoredMatches,
   getSampleTournament,
   clearTournamentStorage,
+  downloadTournamentBackup,
+  importTournamentData,
 } from './utils/storage';
 import { Header } from './components/Header';
 import { TeamManager } from './components/TeamManager';
@@ -287,6 +289,22 @@ export default function App() {
     setActiveTab('standings');
   };
 
+  const handleExportBackup = () => {
+    downloadTournamentBackup();
+    showToast('¡Copia de seguridad descargada en archivo JSON!');
+  };
+
+  const handleImportBackup = (jsonStr: string) => {
+    try {
+      const restored = importTournamentData(jsonStr);
+      setTeams(restored.teams);
+      setMatches(restored.matches);
+      showToast(`¡Datos restaurados con éxito! ${restored.teams.length} equipos cargados.`);
+    } catch (err: any) {
+      showToast('Error al importar: ' + err.message);
+    }
+  };
+
   return (
     <div className="min-h-screen cancha-futbol text-emerald-50 flex flex-col font-sans pb-20 sm:pb-8 selection:bg-amber-500 selection:text-slate-950">
       {/* Encabezado Principal */}
@@ -296,6 +314,8 @@ export default function App() {
         onLoadSample={handleLoadSample}
         onReset={handleResetTournament}
         onOpenEvidence={() => setShowEvidenceModal(true)}
+        onExportBackup={handleExportBackup}
+        onImportBackup={handleImportBackup}
       />
 
       {/* Contenedor Principal */}
