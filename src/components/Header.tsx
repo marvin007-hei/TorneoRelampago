@@ -4,13 +4,14 @@
  */
 
 import React from 'react';
-import { Trophy, RefreshCw, Sparkles, PlusCircle } from 'lucide-react';
+import { Trophy, RefreshCw, Sparkles, Image as ImageIcon } from 'lucide-react';
 
 interface HeaderProps {
   teamsCount: number;
   matchesCount: number;
   onLoadSample: () => void;
   onReset: () => void;
+  onOpenEvidence: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   matchesCount,
   onLoadSample,
   onReset,
+  onOpenEvidence,
 }) => {
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md">
@@ -44,7 +46,16 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Acciones Rápidas */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={onOpenEvidence}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 text-xs font-semibold transition-colors active:scale-95 cursor-pointer"
+              title="Ver imagen y carpeta de Prompt 1"
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Prompt 1</span>
+            </button>
+
             {teamsCount === 0 ? (
               <button
                 onClick={onLoadSample}
@@ -57,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <button
                 onClick={onReset}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-red-950/40 text-slate-300 hover:text-red-400 border border-slate-700 text-xs transition-colors active:scale-95 cursor-pointer"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-red-950/40 text-slate-300 hover:text-red-400 border border-slate-700 text-xs transition-colors active:scale-95 cursor-pointer"
                 title="Reiniciar torneo y limpiar datos"
               >
                 <RefreshCw className="w-3 h-3" />

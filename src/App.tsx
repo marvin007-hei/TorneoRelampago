@@ -45,6 +45,7 @@ export default function App() {
   const [matches, setMatches] = useState<Match[]>(() => loadStoredMatches());
   const [activeTab, setActiveTab] = useState<TabType>('teams');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showEvidenceModal, setShowEvidenceModal] = useState<boolean>(false);
 
   // Auto-mostrar mensaje toast temporal
   const showToast = (msg: string) => {
@@ -192,6 +193,7 @@ export default function App() {
         matchesCount={matches.length}
         onLoadSample={handleLoadSample}
         onReset={handleResetTournament}
+        onOpenEvidence={() => setShowEvidenceModal(true)}
       />
 
       {/* Contenedor Principal */}
@@ -319,6 +321,78 @@ export default function App() {
           </button>
         </div>
       </nav>
+
+      {/* Modal para visualizar la captura y carpeta de Prompt 1 */}
+      {showEvidenceModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-slate-900 border-2 border-amber-500/50 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm">
+                  📁
+                </span>
+                <div>
+                  <h3 className="font-extrabold text-base text-white">
+                    Carpeta y Captura: Prompt 1
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Ubicación en el repositorio: <code className="text-amber-300">/prompt-1/</code> y <code className="text-amber-300">/evidencias/</code>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEvidenceModal(false)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center font-bold text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Vista previa de la captura */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span className="font-semibold">📸 Captura de pantalla de la tabla y desempates:</span>
+                <a
+                  href="/prompt-1/prompt_1.jpg"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-amber-400 hover:underline font-medium"
+                >
+                  Abrir imagen completa ➜
+                </a>
+              </div>
+              <div className="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-1">
+                <img
+                  src="/prompt-1/prompt_1.jpg"
+                  alt="Captura de Prompt 1"
+                  className="w-full h-auto rounded-lg object-contain max-h-[50vh]"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+            {/* Guía de archivos */}
+            <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
+              <h4 className="font-bold text-amber-400">Archivos guardados en el repositorio:</h4>
+              <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+                <li><code className="text-emerald-400 font-mono">/prompt-1/prompt_1.jpg</code> (Imagen de la captura de pantalla)</li>
+                <li><code className="text-emerald-400 font-mono">/prompt-1/Captura_de_pantalla_2026-10-02_085915.png</code> (Copia con el nombre original)</li>
+                <li><code className="text-emerald-400 font-mono">/prompt-1/README.md</code> (Documento detallado de Prompt 1)</li>
+                <li><code className="text-emerald-400 font-mono">/evidencias/prompt_1.jpg</code> (Acceso directo alternativo)</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setShowEvidenceModal(false)}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md cursor-pointer"
+              >
+                Entendido / Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notificación Toast Flotante */}
       {toastMessage && (
