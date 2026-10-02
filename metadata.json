@@ -1,0 +1,7 @@
+{
+  "name": "Torneo Relámpago",
+  "description": "Organizador estudiantil de torneos de fútbol para los recreos. Registro de equipos, fixture round-robin equilibrado y tabla de posiciones con criterios de desempate.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
