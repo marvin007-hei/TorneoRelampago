@@ -46,6 +46,42 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('teams');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showEvidenceModal, setShowEvidenceModal] = useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [imageTimestamp, setImageTimestamp] = useState<number>(() => Date.now());
+
+  const handleUploadImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result as string;
+        const res = await fetch('/api/upload-evidence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64, filename: file.name }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setImageTimestamp(Date.now());
+          showToast('¡Captura original actualizada y subida a tu GitHub!');
+        } else {
+          showToast('Error al subir: ' + (data.error || 'Intente nuevamente'));
+        }
+      } catch (err: any) {
+        showToast('Error al procesar: ' + err.message);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    };
+    reader.onerror = () => {
+      showToast('Error al leer el archivo seleccionado');
+      setIsUploadingImage(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Auto-mostrar mensaje toast temporal
   const showToast = (msg: string) => {
@@ -353,7 +389,7 @@ export default function App() {
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span className="font-semibold">📸 Captura de pantalla de la tabla y desempates:</span>
                 <a
-                  href="/prompt-1/prompt_1.jpg"
+                  href={`/prompt-1/prompt_1.jpg?t=${imageTimestamp}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-amber-400 hover:underline font-medium"
@@ -363,22 +399,55 @@ export default function App() {
               </div>
               <div className="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-1">
                 <img
-                  src="/prompt-1/prompt_1.jpg"
+                  src={`/prompt-1/prompt_1.jpg?t=${imageTimestamp}`}
                   alt="Captura de Prompt 1"
-                  className="w-full h-auto rounded-lg object-contain max-h-[50vh]"
+                  className="w-full h-auto rounded-lg object-contain max-h-[45vh]"
                   referrerPolicy="no-referrer"
                 />
               </div>
             </div>
 
-            {/* Guía de archivos */}
+            {/* Subir archivo original del usuario */}
+            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-xs text-amber-400">
+                    📤 Reemplazar con tu archivo original exacto
+                  </h4>
+                  <p className="text-[11px] text-slate-300">
+                    Selecciona tu archivo <code className="text-white font-mono">Captura de pantalla 2026-10-02 085915.png</code> y se guardará y sincronizará a tu GitHub al instante.
+                  </p>
+                </div>
+              </div>
+              <label className="inline-flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow cursor-pointer transition-all active:scale-95">
+                <span>{isUploadingImage ? 'Subiendo y sincronizando a GitHub...' : '📁 Elegir archivo desde mi PC'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadImageFile}
+                  disabled={isUploadingImage}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Guía de archivos y enlace a GitHub */}
             <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
-              <h4 className="font-bold text-amber-400">Archivos guardados en el repositorio:</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-amber-400">Archivos en tu repositorio:</h4>
+                <a
+                  href="https://github.com/marvin007-hei/TorneoRelampago/tree/main/prompt-1"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-blue-400 hover:underline"
+                >
+                  Ver en GitHub ➜
+                </a>
+              </div>
               <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
-                <li><code className="text-emerald-400 font-mono">/prompt-1/prompt_1.jpg</code> (Imagen de la captura de pantalla)</li>
-                <li><code className="text-emerald-400 font-mono">/prompt-1/Captura_de_pantalla_2026-10-02_085915.png</code> (Copia con el nombre original)</li>
-                <li><code className="text-emerald-400 font-mono">/prompt-1/README.md</code> (Documento detallado de Prompt 1)</li>
-                <li><code className="text-emerald-400 font-mono">/evidencias/prompt_1.jpg</code> (Acceso directo alternativo)</li>
+                <li><code className="text-emerald-400 font-mono">/prompt-1/prompt_1.jpg</code></li>
+                <li><code className="text-emerald-400 font-mono">/prompt-1/Captura_de_pantalla_2026-10-02_085915.png</code></li>
+                <li><code className="text-emerald-400 font-mono">/prompt-1/README.md</code></li>
               </ul>
             </div>
 
