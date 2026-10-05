@@ -107,3 +107,13 @@ Para ver los detalles específicos de las últimas funciones añadidas, consulta
    - Estados vacíos invitando a la primera acción.
    - Mensajes sin tecnicismos en español.
 
+---
+
+## 📂 Evidencias por Etapa (Prompts y Capturas Reales)
+
+- 📸 **[Carpeta General de Evidencias](./evidencias/README.md)**
+- 🥇 **[Prompt 1: Torneo, Fixture y Tabla de Posiciones](./prompt-1/README.md)**
+- 🥈 **[Prompt 2: Persistencia Local, Respaldos JSON, Reinicio y Penales](./prompt-2/README.md)**
+- 🥉 **[Prompt 3: Interfaz 320px, Contraste al Sol y Accesibilidad](./prompt-3/README.md)**
+
+
